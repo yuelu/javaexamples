@@ -19,6 +19,10 @@ public class AtomicDemo {
         for (int i = 0; i < numOfThreads; i++)
             new SequencerThread(notThreadSafeSequencer, cBar);
 
+        SynchronizedSequencer synchronizedSequencer = new SynchronizedSequencer();
+        for (int i = 0; i < numOfThreads; i++)
+            new SequencerThread(synchronizedSequencer, cBar);
+
         ThreadSafeSequencer threadSafeSequencer = new ThreadSafeSequencer();
         for (int i = 0; i < numOfThreads; i++)
             new SequencerThread(threadSafeSequencer, cBar);
@@ -36,6 +40,17 @@ public class AtomicDemo {
         public int getNext() {
             // this operation is not atomic, which means that it does not execute as a single indivisible operation. It
             // is a sequence of three operations: fetch the current value, add one to it, and write the new value back
+            return ++sequence;
+        }
+    }
+
+    private static class SynchronizedSequencer implements Sequencer {
+
+        private static int sequence = 0;
+
+        @Override
+        public synchronized int getNext() {
+            // using locking to synchronize access to sequence
             return ++sequence;
         }
     }
@@ -71,6 +86,6 @@ class SequencerThread implements Runnable {
         } catch (InterruptedException | BrokenBarrierException e) {
             e.printStackTrace();
         }
-        System.out.println("Next from " + sequencer.getClass() + ": " + sequencer.getNext());
+        System.out.println("Next from " + sequencer.getClass().getSimpleName() + ": " + sequencer.getNext());
     }
 }
